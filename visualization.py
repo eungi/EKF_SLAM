@@ -20,8 +20,8 @@ def changing_visualization_coordinate(pose) :
 	return (int(changed_x), int(changed_y))
 
 def draw_t(vehicle_pose, heading, target1, target2) :
-	heading = (heading + 180) * (3.141592 / 180)
-	heading_ = (heading + 90) * (3.141592 / 180)
+	#heading = (heading + 180) * (3.141592 / 180)
+	#heading_ = (heading + 90) * (3.141592 / 180)
 	basic_world = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
 
 	# 원점 표시
