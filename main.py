@@ -118,17 +118,17 @@ def msg_callback(car_state, target_info):
 	vs.draw_path(t_state, target1_poses)
 
 	# Todo : Add EKF-SLAM
-	dt = 0.02#car_state.sampling_time  # Not yet
-	v_t_1 = car_state.velocity
+	dt = car_state.yaw_rate_dt  # Not yet
+	v_t_1 = velocity
 	w_t_1 = car_state.yaw_rate  # Not yet
-	x_t_1 = car_state.PosX
-	y_t_1 = car_state.PosY
-	theta_t_1 = car_state.heading
-	map_x1 = target_info.targetPosX1
-	map_y1 = target_info.targetPosY1
+	x_t_1 = vehicle_pose[0]
+	y_t_1 = vehicle_pose[1]
+	theta_t_1 = heading
+	map_x1 = target1_[0]
+	map_y1 = target1_[1]
 	map_id1 = 1  # fix
-	map_x2 = target_info.targetPosX2
-	map_y2 = target_info.targetPosY2
+	map_x2 = target2_[0]
+	map_y2 = target2_[1]
 	map_id2 = 2  # fix
 
 	u_t = np.array([v_t_1, w_t_1])
@@ -138,10 +138,10 @@ def msg_callback(car_state, target_info):
 	c_t = [map_id1, map_id2]  # fix
 	# update/
 
-	#mu_t, sigma_t = EKF_SLAM.EKF_SLAM(mu_t_1, sigma_t_1, u_t, z_t, c_t, dt, N)
+	mu_t, sigma_t = EKF_SLAM.EKF_SLAM(mu_t_1, sigma_t_1, u_t, z_t, c_t, dt, N)
 
-	#mu_t_1 = mu_t
-        #sigma_t_1 = sigma_t
+	mu_t_1 = mu_t
+        sigma_t_1 = sigma_t
 
 	slam_pub.publish(bridge.cv2_to_imgmsg(t_state, "bgr8"))
 
