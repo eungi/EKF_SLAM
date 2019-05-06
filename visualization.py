@@ -29,8 +29,8 @@ def draw_t(vehicle_pose, heading, target1, target2) :
 	cv2.line(basic_world, changing_visualization_coordinate((0, -0.5)), changing_visualization_coordinate((0, 0.5)), white, 1)
 
 	# 타겟 정보
-	cv2.circle(basic_world, changing_visualization_coordinate(target1), 3, red, -1)
-	cv2.circle(basic_world, changing_visualization_coordinate(target2), 3, orange, -1)
+	cv2.circle(basic_world, changing_visualization_coordinate(target1), 2, red, -1)
+	cv2.circle(basic_world, changing_visualization_coordinate(target2), 2, orange, -1)
 
 	# 차량 정보
 	cv2.circle(basic_world, changing_visualization_coordinate(vehicle_pose), 3, blue, -1)
@@ -46,3 +46,7 @@ def draw_path(basic_world, poses) :
 	else :
 		for i in range(len(poses) - 1) :
 			cv2.line(basic_world, changing_visualization_coordinate(poses[i]), changing_visualization_coordinate(poses[i+1]), green, 1)
+
+def draw_origin_point(basic_world, target1, target2) :
+	cv2.circle(basic_world, changing_visualization_coordinate(target1), 4, white, 0)
+	cv2.circle(basic_world, changing_visualization_coordinate(target2), 4, white, 0)
