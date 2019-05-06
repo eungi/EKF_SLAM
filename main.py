@@ -19,39 +19,15 @@ slam_pub = rospy.Publisher("SLAM", Image, queue_size=1)
 
 vehicle_poses = []
 vehicle_poses_ = []
-target1_poses = []
 target_origin_poses = []
 targets_origin = []
 
-def avm_changing_coordinate(pose, criteria, heading) :
-	angle = (180 - heading) * (3.141592 / 180)
-	
-	transform_pose = [pose[0] - criteria[0], pose[1] - criteria[1]]
-	transform_pose = [transform_pose[0]*np.cos(angle) - transform_pose[1]*np.sin(angle), transform_pose[0]*np.sin(angle) + transform_pose[1]*np.cos(angle)]
-	transform_pose = [transform_pose[0] + criteria[0], transform_pose[1] + criteria[1]]
-
-	return transform_pose
-
-def msg_callback(car_state, target_info):
+def avm_changing_coordinate(target1, target2, heading) :
 	global movement
-	global mu_t_1
-	global sigma_t_1
-	global N
-
-	#rospy.loginfo(car_state)
-	vehicle_pose = [car_state.PosX, car_state.PosY]
-	velocity = car_state.velocity
-	heading = car_state.heading
-	heading_ = (heading + 180) * (3.141592 / 180)
-	heading__ = (heading) * (3.141592 / 180)
-	target1 = [target_info.targetPosX1, target_info.targetPosY1]
-	target2 = [target_info.targetPosX2, target_info.targetPosY2]
-
-	vehicle_poses.append(vehicle_pose)
-
-	result = [(target1[0]+target2[0])/2, (target1[1]+target2[1])/2]
-	target1_ = avm_changing_coordinate(target1, result, 90)
-	target2_ = avm_changing_coordinate(target2, result, 90)
+	heading_ = heading * (3.141592 / 180)
+	target1_ = [target1[1]*np.cos(heading_) - target1[0]*np.sin(heading_), target1[1]*np.sin(heading_) + target1[0]*np.cos(heading_)]
+	target2_ = [target2[1]*np.cos(heading_) - target2[0]*np.sin(heading_), target2[1]*np.sin(heading_) + target2[0]*np.cos(heading_)]
+	result = [(target1_[0]+target2_[0])/2, (target1_[1]+target2_[1])/2]
 
 	if len(targets_origin) is 0 :
 		targets_origin.append(result)
@@ -61,61 +37,49 @@ def msg_callback(car_state, target_info):
 
 		target_origin_poses.append(tg1)
 		target_origin_poses.append(tg2)
-
-	target1_ = avm_changing_coordinate(target1_, targets_origin[0], heading)
-	target2_ = avm_changing_coordinate(target2_, targets_origin[0], heading)
-
-	target1_ = [target1_[0] - targets_origin[0][0], target1_[1] - targets_origin[0][1]]
-	target2_ = [target2_[0] - targets_origin[0][0], target2_[1] - targets_origin[0][1]]
 	
 	if len(vehicle_poses) is 0 :
 		pass
 	else :
 		mv = [(vehicle_poses[len(vehicle_poses)-1][0] - vehicle_poses[len(vehicle_poses)-2][0]), (vehicle_poses[len(vehicle_poses)-1][1] - vehicle_poses[len(vehicle_poses)-2][1])]
-		#print(heading)
-		print(mv)
-		#mv = avm_changing_coordinate(mv, [0,0], -heading)
-		#print(mv)
 		movement = [movement[0] - mv[0], movement[1] - mv[1]]
-		#print(movement)
-	print(target1_)
-	print(mv)
-	print(movement)
-	print("")
 
-	target1_ = [target1_[0] - movement[1], target1_[1] - movement[0]]
-	target2_ = [target2_[0] - movement[1], target2_[1] - movement[0]]
-	"""
-	#target1 = avm_changing_coordinate(target1_, [0,0], 90)
-	target1s = [target1[1]*np.cos(heading__) - target1[0]*np.sin(heading__) - 5, target1[1]*np.sin(heading__) + target1[0]*np.cos(heading__)]
-	target2s = [target2[1]*np.cos(heading__) - target2[0]*np.sin(heading__) - 5, target2[1]*np.sin(heading__) + target2[0]*np.cos(heading__)]
-	target1_poses.append(target2s)
-	"""
-	"""
+	target1_ = [target1_[0] + movement[0], target1_[1] + movement[1]]
+	target2_ = [target2_[0] + movement[0], target2_[1] + movement[1]]
+	
+	target1_ = [target1_[0] - result[0], target1_[1] - result[1]]
+	target2_ = [target2_[0] - result[0], target2_[1] - result[1]]
+	
 	if len(vehicle_poses) is 0 :
 		pass
 	else :
-		mv = [(vehicle_poses[len(vehicle_poses)-1][0] - vehicle_poses[len(vehicle_poses)-2][0]), (vehicle_poses[len(vehicle_poses)-1][1] - vehicle_poses[len(vehicle_poses)-2][1])]
-		#print(heading)
-		print(mv)
-		#mv = avm_changing_coordinate(mv, [0,0], -heading)
-		#print(mv)
-		movement = [movement[0] - mv[0], movement[1] - mv[1]]
-		#print(movement)
-	print(target1_)
-	print(mv)
-	print(movement)
-	print("")
+		mv = [(vehicle_poses[len(vehicle_poses)-1][0] - vehicle_poses[0][0]), (vehicle_poses[len(vehicle_poses)-1][1] - vehicle_poses[0][1])]
+	
+		changed_target1 = [target1_[0] + mv[0], target1_[1] + mv[1]]
+		changed_target2 = [target2_[0] + mv[0], target2_[1] + mv[1]]
 
-	target1_ = [target1_[0] + movement[1], target1_[1] + movement[0]]
-	target2_ = [target2_[0] + movement[1], target2_[1] + movement[0]]
-	"""
+	return changed_target1, changed_target2
+
+def msg_callback(car_state, target_info):
+	global mu_t_1
+	global sigma_t_1
+	global N
+
+	#rospy.loginfo(car_state)
+	vehicle_pose = [car_state.PosX, car_state.PosY]
+	velocity = car_state.velocity
+	heading = car_state.heading
+	heading_ = (heading + 180) * (3.141592 / 180)
+	target1 = [target_info.targetPosX1, target_info.targetPosY1]
+	target2 = [target_info.targetPosX2, target_info.targetPosY2]
+
+	vehicle_poses.append(vehicle_pose)
+
+	target1_, target2_ = avm_changing_coordinate(target1, target2, heading)
 
 	t_state = vs.draw_t(vehicle_pose, heading_, target1_, target2_)
 	vs.draw_path(t_state, vehicle_poses)
-	#vs.draw_path(t_state, vehicle_poses_)
 	vs.draw_origin_point(t_state, target_origin_poses[0], target_origin_poses[1])
-	vs.draw_path(t_state, target1_poses)
 
 	# Todo : Add EKF-SLAM
 	dt = car_state.yaw_rate_dt  # Not yet
