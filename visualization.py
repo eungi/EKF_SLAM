@@ -11,6 +11,7 @@ red = (0, 0, 255)
 green = (0, 255, 0)
 blue = (255, 0, 0)
 orange = (0, 155, 255)
+yello = (0, 228, 255)
 white = (255, 255, 255)
 
 def changing_visualization_coordinate(pose) :
@@ -27,7 +28,7 @@ def draw_t(vehicle_pose, heading, target1, target2) :
 	cv2.line(basic_world, changing_visualization_coordinate((0, -0.5)), changing_visualization_coordinate((0, 0.5)), white, 1)
 
 	# 타겟 정보
-	cv2.circle(basic_world, changing_visualization_coordinate(target1), 2, red, -1)
+	cv2.circle(basic_world, changing_visualization_coordinate(target1), 2, orange, -1)
 	cv2.circle(basic_world, changing_visualization_coordinate(target2), 2, orange, -1)
 
 	# 차량 정보
@@ -43,8 +44,20 @@ def draw_path(basic_world, poses) :
 		pass
 	else :
 		for i in range(len(poses) - 1) :
-			cv2.line(basic_world, changing_visualization_coordinate(poses[i]), changing_visualization_coordinate(poses[i+1]), green, 1)
+			cv2.line(basic_world, changing_visualization_coordinate(poses[i]), changing_visualization_coordinate(poses[i+1]), yello, 1)
 
 def draw_origin_point(basic_world, target1, target2) :
 	cv2.circle(basic_world, changing_visualization_coordinate(target1), 4, white, 0)
 	cv2.circle(basic_world, changing_visualization_coordinate(target2), 4, white, 0)
+
+def draw_ekf_vehicle(basic_world, pose) :
+	vehicle_pose = [pose[0], pose[1]]
+	cv2.circle(basic_world, changing_visualization_coordinate(vehicle_pose), 3, red, -1)
+	r = 4.5
+	heading = (180 + pose[2]) * (3.141592 / 180)
+	end_point = ((-1*r*np.cos(heading))+vehicle_pose[0], (r*np.sin(heading)+vehicle_pose[1]))
+	cv2.line(basic_world, changing_visualization_coordinate(vehicle_pose), changing_visualization_coordinate(end_point), red, 1)
+
+def draw_ekf_point(basic_world, target1, target2) :
+	cv2.circle(basic_world, changing_visualization_coordinate(target1), 3, green, 1)
+	cv2.circle(basic_world, changing_visualization_coordinate(target2), 3, green, 1)
