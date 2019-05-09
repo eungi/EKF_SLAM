@@ -15,13 +15,16 @@ def initialization(N, car_state, target_info, vehicle_pose):
     # mu_0[4, 0] = 0
     # mu_0[5, 0] = 0
     # mu_0[6, 0] = 0
-    mu_0[0, 0] = car_state.PosX
-    mu_0[1, 0] = car_state.PosY
-    mu_0[2, 0] = np.deg2rad(car_state.heading)  # car_state.heading
-    mu_0[3, 0] = target_info.targetPosX1
-    mu_0[4, 0] = target_info.targetPosY1
-    mu_0[5, 0] = target_info.targetPosX2
-    mu_0[6, 0] = target_info.targetPosY2
+    # # mu_0[0, 0] = car_state.PosX
+    # # mu_0[1, 0] = car_state.PosY
+    # mu_0[0, 0] = target_info.PosX
+    # mu_0[1, 0] = target_info.PosY
+    # # mu_0[2, 0] = np.deg2rad(car_state.heading)  # car_state.heading * np.pi / 180  # car_state.heading
+    # mu_0[2, 0] = np.deg2rad(target_info.heading)
+    # mu_0[3, 0] = target_info.targetPosX1
+    # mu_0[4, 0] = target_info.targetPosY1
+    # mu_0[5, 0] = target_info.targetPosX2
+    # mu_0[6, 0] = target_info.targetPosY2
     # mu_0[0, 0] = vehicle_pose[0]
     # mu_0[1, 0] = vehicle_pose[1]
     # mu_0[2, 0] = np.deg2rad(car_state.heading)  # car_state.heading
@@ -29,9 +32,34 @@ def initialization(N, car_state, target_info, vehicle_pose):
     # mu_0[4, 0] = target1_[1]
     # mu_0[5, 0] = target2_[0]
     # mu_0[6, 0] = target2_[1]
+    # test
+    mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(2.7/2))
+    mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(2.7/2)
+    mu_0[2, 0] = np.deg2rad(car_state.heading)
+    # mu_0[3, 0] = -1 * (mu_0[0, 0] - target_info.targetPosY1)
+    # mu_0[4, 0] = mu_0[1, 0] + target_info.targetPosX1
+    # mu_0[5, 0] = target_info.targetPosY2 + mu_0[0, 0]
+    # mu_0[6, 0] = target_info.targetPosX2 - mu_0[1, 0]
+    # mu_0[3, 0] = target_info.targetPosY1 - mu_0[0, 0]
+    # mu_0[4, 0] = target_info.targetPosX1 - mu_0[1, 0]
+    # mu_0[5, 0] = target_info.targetPosY2 - mu_0[0, 0]
+    # mu_0[6, 0] = target_info.targetPosX2 - mu_0[1, 0]
 
-    sigma_0 = inf * np.ones((2 * N + 3, 2 * N + 3))
-    # sigma_0 = inf * np.eye(2 * N + 3)  # check
+    # 0508
+    # mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(mu_0[2, 0])
+    # mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(mu_0[2, 0])
+    # mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(mu_0[2, 0])
+    # mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(mu_0[2, 0])
+
+    mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
+    # 0508/
+    # test/
+
+    # sigma_0 = inf * np.ones((2 * N + 3, 2 * N + 3))
+    sigma_0 = inf * np.eye(2 * N + 3)  # check
     sigma_0[:3, :3] = np.zeros((3, 3))
 
     global mu_t_1
@@ -69,14 +97,37 @@ def motion_update(mu_t_1, sigma_t_1, u_t, dt, N):
     velocity_model = np.array([[-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
                                [(v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
                                [w_t*dt]])  # velocity_model: standard noise-free velocity model
+    # velocity_model = np.array([[-(v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+    #                            [-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    #                            [w_t*dt]])  # velocity_model: standard noise-free velocity model
+    # 0508
+    # velocity_model = np.array([[-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    #                            [-(v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+    #                            [w_t*dt]])  # velocity_model: standard noise-free velocity model
+    # 0508/
+
 
     mu_t_bar = mu_t_1 + np.dot(F_x_T, velocity_model)  # line: 3
 
-    g_t = np.array([[0, 0, (v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
-                    [0, 0, (v_t/w_t)*np.sin(mu_t_1_theta)-(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    # g_t = np.array([[0, 0, (v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+    #                 [0, 0, (v_t/w_t)*np.sin(mu_t_1_theta)-(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    #                 [0, 0, 0]])  # g: motion function
+    g_t = np.array([[0, 0, -(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+                    [0, 0, (v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
                     [0, 0, 0]])  # g: motion function
 
-    G_t = np.eye(2*N + 3) + np.dot(np.dot(F_x_T, g_t), F_x)  # line: 4
+    # 0508
+    # g_t = np.array([[0, 0, -(v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+    #                 [0, 0, (v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    #                 [0, 0, 0]])  # g: motion function
+    # 0508/
+
+    G_t = np.eye(2*N + 3) + np.dot(np.dot(F_x_T, g_t), F_x)  # line: 4  # Gt: Jacobian of velocity model
+
+    # 0508
+    # G_t = np.eye(2*N + 3)
+    # G_t[:3, :3] = g_t  # line: 4  # Gt: Jacobian of velocity model
+    # 0508/
 
     # test
     print('\nG_t >>')
@@ -145,7 +196,7 @@ def measurement_update(mu_t_bar, sigma_t_bar, z_t, N):
         j = int(s_t)  # line: 8
 
         order = ['st', 'nd']
-        if sigma_t_bar[2*j+1][2*j+1] >= 1e6 and sigma_t_bar[2*j+2][2*j+2] >= 1e6:  # line: 9 ~ 11
+        if sigma_t_bar[2*j+1][2*j+1] >= 1e50 and sigma_t_bar[2*j+2][2*j+2] >= 1e50:  # line: 9 ~ 11
             print('\n%d%s landmark has never been observed before\n' % (j, order[j-1]))  # test
 
             mu_t_bar[2 * j + 1][0] = mu_t_bar[0][0] + r_t * np.cos(pi_t + mu_t_bar[2][0])
@@ -187,13 +238,21 @@ def measurement_update(mu_t_bar, sigma_t_bar, z_t, N):
         # # F_x_j = np.vstack((F_x_j, [0, 0, 0, 0, 0, 0, 1]))  # line: 15
 
         # test
-        F_x_j = np.zeros((5, 2*N+3))
-        F_x_j[:3, :3] = np.eye(3)
-        F_x_j[3, 2*j+1] = 1
-        F_x_j[4, 2*j+2] = 1
+        # F_x_j = np.zeros((5, 2*N+3))
+        # F_x_j[:3, :3] = np.eye(3)
+        # F_x_j[3, 2*j+1] = 1
+        # F_x_j[4, 2*j+2] = 1
+
         # F_x_j[5, 2*j+2] = 1  # line: 15
         # F_x_j = np.vstack((F_x_j, [0, 0, 0, 0, 0, 0, 1]))  # line: 15
         # test/
+
+        # 0508
+        F_x_j = np.zeros((5, 2*N+3))
+        F_x_j[:3, :3] = np.eye(3)
+        F_x_j[3, 2*j+1] = 1
+        F_x_j[4, 2*j+2] = 1  # line: 15
+        # 0508/
         # check/
 
         # test
@@ -208,10 +267,18 @@ def measurement_update(mu_t_bar, sigma_t_bar, z_t, N):
         # H_t = (1/q) * np.dot(h_t, F_x_j)  # line:16  # check
 
         # test
-        h_t = np.array([[root_q*delta_x, -root_q*delta_y, 0, -root_q*delta_x, root_q*delta_y],
-                        [delta_y, delta_x, -1, -delta_y, -delta_x]])  # h_t: Jacobian of approximated linear function
-        H_t = (1/q + 1e1) * np.dot(h_t, F_x_j)  # line:16  # check
+        # h_t = np.array([[root_q*delta_x, -root_q*delta_y, 0, -root_q*delta_x, root_q*delta_y],
+        #                 [delta_y, delta_x, -1, -delta_y, -delta_x]])  # h_t: Jacobian of approximated linear function
+        # h_t = np.array([[-root_q * delta_x, -root_q * delta_y, 0, root_q * delta_x, root_q * delta_y],
+        #                 [delta_y, -delta_x, -1, -delta_y, delta_x]])  # h_t: Jacobian of approximated linear function
+        # H_t = (1/q) * np.dot(h_t, F_x_j)  # line:16  # check
         # test/
+
+        # 0508
+        h_t = np.array([[-root_q * delta_x, -root_q * delta_y, 0, root_q * delta_x, root_q * delta_y],
+                        [delta_y, -delta_x, -q, -delta_y, delta_x]])  # h_t: Jacobian of approximated linear function
+        H_t = (1 / q) * np.dot(h_t, F_x_j)  # line:16  # check
+        # 0508/
         # check/
 
         # test
