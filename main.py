@@ -18,6 +18,7 @@ import numpy as np
 
 slam_pub = rospy.Publisher("SLAM", Image, queue_size=1)
 
+vehicle_poses_ = []
 vehicle_poses = []
 target_origin_poses = []
 targets_origin = []
@@ -104,6 +105,8 @@ def msg_callback(car_state, target_info):
 
 	# Parameter initialization
 	vehicle_pose_ = [car_state.PosX, car_state.PosY]
+	vehicle_pose__ = [-1*car_state.PosX, car_state.PosY]
+	vehicle_poses_.append(vehicle_pose__)
 	heading_ = car_state.heading
 	target1_ = [target_info.targetPosX1, target_info.targetPosY1]
 	target2_ = [target_info.targetPosX2, target_info.targetPosY2]
@@ -173,11 +176,11 @@ def msg_callback(car_state, target_info):
 	# < For visualization >
 	# raw
 	t_state = vs.draw_t(vehicle_pose, heading, FVC(target1), FVC(target2))
-	vs.draw_path(t_state, vehicle_poses, yello)
+	vs.draw_path(t_state, vehicle_poses_, yello)
 	vs.draw_point(t_state, target_origin_poses[0], target_origin_poses[1], white, 3, 0)
 	# EKF-SLAM
 	#vs.draw_point(t_state, FVC(ekf_target1), FVC(ekf_target2), green, 2, -1)
-	#vs.draw_vehicle(t_state, FVC(ekf_pose[0:2]), FVC(ekf_pose[2]), red, 2)
+	#vs.draw_vehicle(t_state, ekf_pose[0:2], ekf_pose[2], red, 2)
 
 	if len(target1s) is 0 :
 		pass
