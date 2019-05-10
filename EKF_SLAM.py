@@ -33,9 +33,9 @@ def initialization(N, car_state, target_info, vehicle_pose):
     # mu_0[5, 0] = target2_[0]
     # mu_0[6, 0] = target2_[1]
     # test
-    mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(2.7/2))
-    mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(2.7/2)
-    mu_0[2, 0] = np.deg2rad(car_state.heading)
+    # mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(1.73/2))
+    # mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(1.73/2)
+    # mu_0[2, 0] = np.deg2rad(car_state.heading)
     # mu_0[3, 0] = -1 * (mu_0[0, 0] - target_info.targetPosY1)
     # mu_0[4, 0] = mu_0[1, 0] + target_info.targetPosX1
     # mu_0[5, 0] = target_info.targetPosY2 + mu_0[0, 0]
@@ -51,11 +51,24 @@ def initialization(N, car_state, target_info, vehicle_pose):
     # mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(mu_0[2, 0])
     # mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(mu_0[2, 0])
 
+    # mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(1.73/2))
+    # mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(1.73/2)
+    # mu_0[2, 0] = np.deg2rad(car_state.heading)
+    # mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
+    # mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
+    # mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
+    # mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
+    # 0508/
+
+    # 0509
+    mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(2.7/2))
+    mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(2.7/2)
+    mu_0[2, 0] = np.deg2rad(car_state.heading)
     mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
     mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
     mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
     mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
-    # 0508/
+    # 0509/
     # test/
 
     # sigma_0 = inf * np.ones((2 * N + 3, 2 * N + 3))
@@ -94,9 +107,10 @@ def motion_update(mu_t_1, sigma_t_1, u_t, dt, N):
     v_t = u_t[0]
     w_t = u_t[1]
     mu_t_1_theta = mu_t_1[2, 0]
-    velocity_model = np.array([[-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
-                               [(v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
-                               [w_t*dt]])  # velocity_model: standard noise-free velocity model
+
+    # velocity_model = np.array([[-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    #                            [(v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+    #                            [w_t*dt]])  # velocity_model: standard noise-free velocity model
     # velocity_model = np.array([[-(v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
     #                            [-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
     #                            [w_t*dt]])  # velocity_model: standard noise-free velocity model
@@ -106,21 +120,33 @@ def motion_update(mu_t_1, sigma_t_1, u_t, dt, N):
     #                            [w_t*dt]])  # velocity_model: standard noise-free velocity model
     # 0508/
 
+    # 0509
+    velocity_model = np.array([[-(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+                               [(v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+                               [w_t*dt]])  # velocity_model: standard noise-free velocity model
+    # 0509/
+
 
     mu_t_bar = mu_t_1 + np.dot(F_x_T, velocity_model)  # line: 3
 
     # g_t = np.array([[0, 0, (v_t/w_t)*np.cos(mu_t_1_theta)-(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
     #                 [0, 0, (v_t/w_t)*np.sin(mu_t_1_theta)-(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
     #                 [0, 0, 0]])  # g: motion function
-    g_t = np.array([[0, 0, -(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
-                    [0, 0, (v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
-                    [0, 0, 0]])  # g: motion function
+    # g_t = np.array([[0, 0, -(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+    #                 [0, 0, (v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+    #                 [0, 0, 0]])  # g: motion function
 
     # 0508
     # g_t = np.array([[0, 0, -(v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
     #                 [0, 0, (v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
     #                 [0, 0, 0]])  # g: motion function
     # 0508/
+    # 0509
+    g_t = np.array([[0, 0, -(v_t/w_t)*np.cos(mu_t_1_theta)+(v_t/w_t)*np.cos(mu_t_1_theta+w_t*dt)],
+                    [0, 0, -(v_t/w_t)*np.sin(mu_t_1_theta)+(v_t/w_t)*np.sin(mu_t_1_theta+w_t*dt)],
+                    [0, 0, 0]])  # g: motion function
+    # 0509/
+
 
     G_t = np.eye(2*N + 3) + np.dot(np.dot(F_x_T, g_t), F_x)  # line: 4  # Gt: Jacobian of velocity model
 
@@ -196,7 +222,7 @@ def measurement_update(mu_t_bar, sigma_t_bar, z_t, N):
         j = int(s_t)  # line: 8
 
         order = ['st', 'nd']
-        if sigma_t_bar[2*j+1][2*j+1] >= 1e50 and sigma_t_bar[2*j+2][2*j+2] >= 1e50:  # line: 9 ~ 11
+        if sigma_t_bar[2*j+1][2*j+1] >= 1e6 and sigma_t_bar[2*j+2][2*j+2] >= 1e6:  # line: 9 ~ 11
             print('\n%d%s landmark has never been observed before\n' % (j, order[j-1]))  # test
 
             mu_t_bar[2 * j + 1][0] = mu_t_bar[0][0] + r_t * np.cos(pi_t + mu_t_bar[2][0])
@@ -309,14 +335,14 @@ def measurement_update(mu_t_bar, sigma_t_bar, z_t, N):
         # print(np.transpose([z_t[:, j-1]]))
         # print(z_t_hat)
         z_dif = np.subtract(np.transpose([z_t[:, j-1]]), z_t_hat, order=1)
-        # print('z_dif')
-        # print(z_dif)
+        print('z_dif')
+        print(z_dif)
         mu_dif = mu_dif + np.dot(K_t, z_dif[:2, 0])
-        # print('mu_dif')
-        # print(mu_dif)
+        print('mu_dif')
+        print(mu_dif)
         sig_dif = sig_dif + np.dot(K_t, H_t)
-        # print('sig_dif')
-        # print(sig_dif)
+        print('sig_dif')
+        print(sig_dif)
 
         # z_dif = z_dif + np.subtract(z_t[:, j-1], z_t_hat)
         # print(z_dif)

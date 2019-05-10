@@ -7,11 +7,6 @@ import numpy as np
 HEIGHT = 400
 WIDTH = 400
 
-red = (0, 0, 255)
-green = (0, 255, 0)
-blue = (255, 0, 0)
-orange = (0, 155, 255)
-yello = (0, 228, 255)
 white = (255, 255, 255)
 
 def changing_visualization_coordinate(pose) :
@@ -20,15 +15,15 @@ def changing_visualization_coordinate(pose) :
 
 	return (int(changed_x), int(changed_y))
 
-def draw_t(vehicle_pose, heading, target1, target2) :
+def draw_t(vehicle_pose, heading, target1, target2, vehicle_color, point_color) :
 	basic_world = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
 
 	cv2.line(basic_world, changing_visualization_coordinate((-0.5, 0)), changing_visualization_coordinate((0.5, 0)), white, 1)
 	cv2.line(basic_world, changing_visualization_coordinate((0, -0.5)), changing_visualization_coordinate((0, 0.5)), white, 1)
 
-	draw_point(basic_world, target1, target2, orange, 2, -1)
+	draw_point(basic_world, target1, target2, point_color, 2, -1)
 
-	draw_vehicle(basic_world, vehicle_pose, heading, blue, 2)
+	draw_vehicle(basic_world, vehicle_pose, heading, vehicle_color, 2)
 
 	return basic_world
 

@@ -16,6 +16,7 @@ bridge = CvBridge()
 
 import numpy as np
 
+ekf_slam_pub = rospy.Publisher("EKF_SLAM", Image, queue_size=1)
 slam_pub = rospy.Publisher("SLAM", Image, queue_size=1)
 
 vehicle_poses_ = []
@@ -26,6 +27,8 @@ targets_origin = []
 target1s = []
 target2s = []
 
+slam_vehicle_poses = []
+
 N = 2
 it = 0
 
@@ -35,6 +38,8 @@ blue = (255, 0, 0)
 orange = (0, 155, 255)
 yello = (0, 228, 255)
 white = (255, 255, 255)
+magenta = (255, 0, 255)
+skyblue = (255, 216, 0)
 
 global max_tg1
 max_tg1 = [0, 0, 0]
@@ -127,31 +132,44 @@ def msg_callback(car_state, target_info):
 		target_origin_poses.append(tg2)
 	vehicle_poses.append(vehicle_pose)
 
-	# EKF-SLAM
+	# EKF SLAM
 	print('\n\n********************\n[%d] iteration\n********************' % it)
 
-	if it == 0 :	# EKF-SLAM initialization
+	if it == 0:
+		# initialization
 		mu_t_1, sigma_t_1 = EKF_SLAM.initialization(N, car_state, target_info, vehicle_pose)
 
-	it = it + 1
+		mu_0 = mu_t_1
+		# initialization/
 
-	v_t_1 = velocity_ / 3.6
-	w_t_1 = yaw_rate + 1e-10
+	it = it + 1
+	# update
+	dt = car_state.yaw_rate_dt  # 0.02  # car_state.sampling_time  # Not yet
+	v_t_1 = car_state.velocity / 3.6
+	w_t_1 = car_state.yaw_rate + 1e-10  # 1 + 0.05 * np.random.randn() + 0  # car_state.yaw_rate  # Not yet
 	w_t_1 = np.deg2rad(w_t_1)
-	map_id1 = 1
-	map_id2 = 2
+	map_id1 = 1  # fix
+	map_id2 = 2  # fix
+
+	# eg coord.
+	x_t_1 = vehicle_pose[0]
+	y_t_1 = vehicle_pose[1]
+	theta_t_1 = np.deg2rad(-car_state.heading)
+	map_x1 = target1[0]
+	map_y1 = target1[1]
+	map_x2 = target2[0]
+	map_y2 = target2[1]
+	# eg coord./
 
 	u_t = np.array([v_t_1, w_t_1])
-
-	# check
-	z_t = np.array([[np.sqrt(pow(target1[0]-vehicle_pose[0], 2)+pow(target1[1]-vehicle_pose[1], 2)),
-		    np.sqrt(pow(target2[0]-vehicle_pose[0], 2)+pow(target2[1]-vehicle_pose[1], 2))],
-		    [np.arctan2(target1[1]-vehicle_pose[1], target1[0]-vehicle_pose[0]) - heading,
-		     np.arctan2(target2[1]-vehicle_pose[1], target2[0]-vehicle_pose[0]) - heading],
+	z_t = np.array([[np.sqrt(pow(map_x1-x_t_1, 2)+pow(map_y1-y_t_1, 2)),
+		    np.sqrt(pow(map_x2-x_t_1, 2)+pow(map_y2-y_t_1, 2))],
+		    [np.arctan2(map_y1-y_t_1, map_x1-x_t_1) - theta_t_1,
+		     np.arctan2(map_y2-y_t_1, map_x2-x_t_1) - theta_t_1],
 		    [map_id1, map_id2]])
 	# check/
 	c_t = [map_id1, map_id2]  # fix
-	y_t = np.array([[vehicle_pose[0]], [vehicle_pose[1]], [heading], [target1[0]], [target1[1]], [target2[0]], [target2[1]]])
+	y_t = np.array([[x_t_1], [y_t_1], [theta_t_1], [map_x1], [map_y1], [map_x2], [map_y2]])
 	# update/
 
 	mu_t, sigma_t = EKF_SLAM.EKF_SLAM(mu_t_1, sigma_t_1, u_t, z_t, c_t, dt, N)
@@ -165,22 +183,34 @@ def msg_callback(car_state, target_info):
 	print(sigma_t)
 	# test/
 
+	# update
 	mu_t_1 = mu_t
 	sigma_t_1 = sigma_t
+	# update/
+
+	# EKF SLAM/
 
 	ekf_pose = mu_t[0:3]
 	ekf_target1 = mu_t[3:5]
 	ekf_target2 = mu_t[5:7]
+
+	slam_vehicle_poses.append(ekf_pose)
 	# EKF SLAM/
 
 	# < For visualization >
 	# raw
-	t_state = vs.draw_t(vehicle_pose, heading, FVC(target1), FVC(target2))
-	vs.draw_path(t_state, vehicle_poses_, yello)
+	t_state = vs.draw_t(vehicle_pose, heading, FVC(target1), FVC(target2), blue, skyblue)
+	#vs.draw_path(t_state, vehicle_poses_, yello)
+	vs.draw_path(t_state, vehicle_poses, green)
 	vs.draw_point(t_state, target_origin_poses[0], target_origin_poses[1], white, 3, 0)
-	# EKF-SLAM
-	#vs.draw_point(t_state, FVC(ekf_target1), FVC(ekf_target2), green, 2, -1)
-	#vs.draw_vehicle(t_state, ekf_pose[0:2], ekf_pose[2], red, 2)
+	# raw + EKF-SLAM
+	vs.draw_path(t_state, slam_vehicle_poses, yello)
+	vs.draw_point(t_state, FVC(ekf_target1), FVC(ekf_target2), magenta, 2, -1)
+	vs.draw_vehicle(t_state, ekf_pose[0:2], ekf_pose[2], red, 2)
+	# Only EKF-SLAM result
+	slam_coord_system = vs.draw_t(ekf_pose[0:2], ekf_pose[2], FVC(ekf_target1), FVC(ekf_target2), red, magenta)
+	vs.draw_path(slam_coord_system, slam_vehicle_poses, yello)
+	vs.draw_point(slam_coord_system, target_origin_poses[0], target_origin_poses[1], white, 3, 0)
 
 	if len(target1s) is 0 :
 		pass
@@ -212,11 +242,12 @@ def msg_callback(car_state, target_info):
 		print('-min_target-')
 		print(min_tg2)
 
-		vs.draw_point(t_state, FVC(max_tg1[1:3]), FVC(min_tg1[1:3]), red, 3, 0)
-		vs.draw_point(t_state, FVC(max_tg2[1:3]), FVC(min_tg2[1:3]), red, 3, 0)
+		#vs.draw_point(t_state, FVC(max_tg1[1:3]), FVC(min_tg1[1:3]), red, 3, 0)
+		#vs.draw_point(t_state, FVC(max_tg2[1:3]), FVC(min_tg2[1:3]), red, 3, 0)
 		
 
 	slam_pub.publish(bridge.cv2_to_imgmsg(cv2.flip(t_state, 1), "bgr8"))
+	ekf_slam_pub.publish(bridge.cv2_to_imgmsg(cv2.flip(slam_coord_system, 1), "bgr8"))
 
 def main() :
 	print("EKF-SLAM Start")
