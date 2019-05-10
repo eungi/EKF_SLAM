@@ -155,10 +155,10 @@ def msg_callback(car_state, target_info):
 	x_t_1 = vehicle_pose[0]
 	y_t_1 = vehicle_pose[1]
 	theta_t_1 = np.deg2rad(-car_state.heading)
-	map_x1 = target1[0]
-	map_y1 = target1[1]
-	map_x2 = target2[0]
-	map_y2 = target2[1]
+	map_x1 = FVC(target1)[0]
+	map_y1 = FVC(target1)[1]
+	map_x2 = FVC(target2)[0]
+	map_y2 = FVC(target2)[1]
 	# eg coord./
 
 	u_t = np.array([v_t_1, w_t_1])
@@ -205,10 +205,10 @@ def msg_callback(car_state, target_info):
 	vs.draw_point(t_state, target_origin_poses[0], target_origin_poses[1], white, 3, 0)
 	# raw + EKF-SLAM
 	vs.draw_path(t_state, slam_vehicle_poses, yello)
-	vs.draw_point(t_state, FVC(ekf_target1), FVC(ekf_target2), magenta, 2, -1)
+	vs.draw_point(t_state, ekf_target1, ekf_target2, magenta, 2, -1)
 	vs.draw_vehicle(t_state, ekf_pose[0:2], ekf_pose[2], red, 2)
 	# Only EKF-SLAM result
-	slam_coord_system = vs.draw_t(ekf_pose[0:2], ekf_pose[2], FVC(ekf_target1), FVC(ekf_target2), red, magenta)
+	slam_coord_system = vs.draw_t(ekf_pose[0:2], ekf_pose[2], ekf_target1, ekf_target2, red, magenta)
 	vs.draw_path(slam_coord_system, slam_vehicle_poses, yello)
 	vs.draw_point(slam_coord_system, target_origin_poses[0], target_origin_poses[1], white, 3, 0)
 
