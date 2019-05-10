@@ -24,9 +24,6 @@ vehicle_poses = []
 target_origin_poses = []
 targets_origin = []
 
-target1s = []
-target2s = []
-
 slam_vehicle_poses = []
 avm_vehicle_poses = []
 
@@ -42,21 +39,12 @@ white = (255, 255, 255)
 magenta = (255, 0, 255)
 skyblue = (255, 216, 0)
 
-global max_tg1
-max_tg1 = [0, 0, 0]
-global min_tg1
-min_tg1 = [100, 0, 0]
-global max_tg2
-max_tg2 = [0, 0, 0]
-global min_tg2
-min_tg2 = [100, 0, 0]
-
 def changing_avm_coordinate(vehicle_pose_, heading_, target1_, target2_) :
 	heading = np.deg2rad(-heading_)
 	heading__ = np.deg2rad(heading_)
 
 	x_t_1 = -1 * (vehicle_pose_[0] + np.cos(heading)*(2.7/2))
-	y_t_1 = vehicle_pose_[1] + np.sin(heading)*(2.7/2)
+	y_t_1 = vehicle_pose_[1] + np.sin(heading)#*(2.7/2)
 	vehicle_pose = [x_t_1, y_t_1]
 
 	"""
@@ -86,9 +74,6 @@ def changing_avm_coordinate(vehicle_pose_, heading_, target1_, target2_) :
 
 		target1 = [target1[0] + moment_x, target1[1] + moment_y]
 		target2 = [target2[0] + moment_x, target2[1] + moment_y]
-
-	target1s.append(target1)
-	target2s.append(target2)
 
 	return vehicle_pose, heading, target1, target2
 
@@ -141,7 +126,7 @@ def msg_callback(car_state, target_info):
 
 	if it == 0:
 		# initialization
-		mu_t_1, sigma_t_1 = EKF_SLAM.initialization(N, avm_vehicle_pose, avm_heading, target1, target2)
+		mu_t_1, sigma_t_1 = EKF_SLAM.initialization(N, avm_vehicle_pose, avm_heading, FVC(target1), FVC(target2))
 
 		mu_0 = mu_t_1
 		# initialization/
@@ -213,6 +198,14 @@ def msg_callback(car_state, target_info):
 	vs.draw_vehicle(t_state, ekf_pose[0:2], ekf_pose[2], red, 2)
 	vs.draw_vehicle(t_state, avm_vehicle_pose, avm_heading, orange, 2)
 	vs.draw_path(t_state, avm_vehicle_poses, blue)
+	# Meaning of color
+	t_state_meaning = [['< Vehicle >', white], ['< Path >', white], ['< Target points >', white]]
+	t_state_color_meaning = [['Blue : Invehicle odometry', blue], ['Red : EKF-SLAM odometry', red], ['Orange : AVM odometry', orange], 
+				['Green : Invehicle path', green], ['Yello : EKF-SLAM path', yello], ['Blue : AVM path', blue],
+				['White : First frame points', white], ['Skyblue : Raw points', skyblue], ['Magenta : EKF-SLAM points', magenta]]
+	t_state = cv2.flip(t_state, 1)
+	t_state = vs.color_meaning_print(t_state, t_state_meaning, t_state_color_meaning)
+
 	# Only EKF-SLAM result
 	slam_coord_system = vs.draw_t(ekf_pose[0:2], ekf_pose[2], ekf_target1, ekf_target2, red, magenta)
 	vs.draw_path(slam_coord_system, slam_vehicle_poses, yello)
@@ -220,43 +213,16 @@ def msg_callback(car_state, target_info):
 	# AVM raw
 	vs.draw_vehicle(slam_coord_system, avm_vehicle_pose, avm_heading, orange, 2)
 	vs.draw_path(slam_coord_system, avm_vehicle_poses, blue)
+	# Meaning of color
+	ekf_state_meaning = [['< Vehicle >', white], ['< Path >', white], ['< Target points >', white]]
+	ekf_state_color_meaning = [['Red : EKF-SLAM odometry', red], ['Orange : AVM odometry', orange], 
+				['Yello : EKF-SLAM path', yello], ['Blue : AVM path', blue],
+				['Magenta : EKF-SLAM points', magenta], ['Skyblue : AVM points', skyblue]]
+	slam_coord_system = cv2.flip(slam_coord_system, 1)
+	slam_coord_system = vs.color_meaning_print(slam_coord_system, ekf_state_meaning, ekf_state_color_meaning)		
 
-	if len(target1s) is 0 :
-		pass
-	else :
-		target1 = np.array(target1)
-		target1 = np.array(target1)
-
-		tg1_np = np.sqrt((target_origin_poses[0][0] - FVC(target1)[0])*target_origin_poses[0][0] - FVC(target1)[0]+(target_origin_poses[0][1] - FVC(target1)[1])*(target_origin_poses[0][1] - FVC(target1)[1]))
-		tg2_np = np.sqrt((target_origin_poses[1][0] - FVC(target2)[0])*(target_origin_poses[1][0] - FVC(target2)[0])+(target_origin_poses[1][1] - FVC(target2)[1])*(target_origin_poses[1][1] - FVC(target2)[1]))
-
-		if max_tg1[0] < tg1_np :
-			max_tg1 = [tg1_np, target1[0], target1[1]]
-		if max_tg2[0] < tg2_np :
-			max_tg2 = [tg2_np, target2[0], target2[1]]
-		if min_tg1[0] > tg1_np :
-			min_tg1 = [tg1_np, target1[0], target1[1]]
-		if min_tg2[0] > tg2_np :
-			min_tg2 = [tg2_np, target2[0], target2[1]]
-		
-		print('\n[target 1]')
-		print('-max_target-')
-		print(max_tg1)
-		print('-min_target-')
-		print(min_tg1)
-
-		print('\n[target 2]')
-		print('-max_target-')
-		print(max_tg2)
-		print('-min_target-')
-		print(min_tg2)
-
-		#vs.draw_point(t_state, FVC(max_tg1[1:3]), FVC(min_tg1[1:3]), red, 3, 0)
-		#vs.draw_point(t_state, FVC(max_tg2[1:3]), FVC(min_tg2[1:3]), red, 3, 0)
-		
-
-	slam_pub.publish(bridge.cv2_to_imgmsg(cv2.flip(t_state, 1), "bgr8"))
-	ekf_slam_pub.publish(bridge.cv2_to_imgmsg(cv2.flip(slam_coord_system, 1), "bgr8"))
+	slam_pub.publish(bridge.cv2_to_imgmsg(t_state, "bgr8"))
+	ekf_slam_pub.publish(bridge.cv2_to_imgmsg(slam_coord_system, "bgr8"))
 
 def main() :
 	print("EKF-SLAM Start")
