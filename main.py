@@ -28,6 +28,7 @@ target1s = []
 target2s = []
 
 slam_vehicle_poses = []
+avm_vehicle_poses = []
 
 N = 2
 it = 0
@@ -121,6 +122,9 @@ def msg_callback(car_state, target_info):
 
 	vehicle_pose, heading, target1, target2 = changing_avm_coordinate(vehicle_pose_, heading_, target1_, target2_)
 
+	avm_vehicle_pose, avm_heading, t1, t2 = changing_avm_coordinate([target_info.PosX, target_info.PosY], target_info.heading, [0,0], [0,0])
+	avm_vehicle_poses.append(avm_vehicle_pose)
+
 	if len(targets_origin) is 0 :
 		result = [(target1[0] + target2[0]) / 2, (target1[1] + target2[1]) / 2]
 		targets_origin.append(result)
@@ -137,7 +141,7 @@ def msg_callback(car_state, target_info):
 
 	if it == 0:
 		# initialization
-		mu_t_1, sigma_t_1 = EKF_SLAM.initialization(N, car_state, target_info, vehicle_pose)
+		mu_t_1, sigma_t_1 = EKF_SLAM.initialization(N, avm_vehicle_pose, avm_heading, target1, target2)
 
 		mu_0 = mu_t_1
 		# initialization/
@@ -154,7 +158,7 @@ def msg_callback(car_state, target_info):
 	# eg coord.
 	x_t_1 = vehicle_pose[0]
 	y_t_1 = vehicle_pose[1]
-	theta_t_1 = np.deg2rad(-car_state.heading)
+	theta_t_1 = heading
 	map_x1 = FVC(target1)[0]
 	map_y1 = FVC(target1)[1]
 	map_x2 = FVC(target2)[0]
@@ -207,10 +211,15 @@ def msg_callback(car_state, target_info):
 	vs.draw_path(t_state, slam_vehicle_poses, yello)
 	vs.draw_point(t_state, ekf_target1, ekf_target2, magenta, 2, -1)
 	vs.draw_vehicle(t_state, ekf_pose[0:2], ekf_pose[2], red, 2)
+	vs.draw_vehicle(t_state, avm_vehicle_pose, avm_heading, orange, 2)
+	vs.draw_path(t_state, avm_vehicle_poses, blue)
 	# Only EKF-SLAM result
 	slam_coord_system = vs.draw_t(ekf_pose[0:2], ekf_pose[2], ekf_target1, ekf_target2, red, magenta)
 	vs.draw_path(slam_coord_system, slam_vehicle_poses, yello)
 	vs.draw_point(slam_coord_system, target_origin_poses[0], target_origin_poses[1], white, 3, 0)
+	# AVM raw
+	vs.draw_vehicle(slam_coord_system, avm_vehicle_pose, avm_heading, orange, 2)
+	vs.draw_path(slam_coord_system, avm_vehicle_poses, blue)
 
 	if len(target1s) is 0 :
 		pass

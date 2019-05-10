@@ -1,73 +1,21 @@
 import numpy as np
 
 
-def initialization(N, car_state, target_info, vehicle_pose):
+def initialization(N, vehicle_pose, heading, target1, target2):
     print('Initialization for EKF SLAM')  # test
     # initialization
     inf = 1e6
 
     mu_0 = np.transpose([np.zeros(2 * N + 3)])
 
-    # mu_0[0, 0] = 0
-    # mu_0[1, 0] = 0
-    # mu_0[2, 0] = 0
-    # mu_0[3, 0] = 0
-    # mu_0[4, 0] = 0
-    # mu_0[5, 0] = 0
-    # mu_0[6, 0] = 0
-    # # mu_0[0, 0] = car_state.PosX
-    # # mu_0[1, 0] = car_state.PosY
-    # mu_0[0, 0] = target_info.PosX
-    # mu_0[1, 0] = target_info.PosY
-    # # mu_0[2, 0] = np.deg2rad(car_state.heading)  # car_state.heading * np.pi / 180  # car_state.heading
-    # mu_0[2, 0] = np.deg2rad(target_info.heading)
-    # mu_0[3, 0] = target_info.targetPosX1
-    # mu_0[4, 0] = target_info.targetPosY1
-    # mu_0[5, 0] = target_info.targetPosX2
-    # mu_0[6, 0] = target_info.targetPosY2
-    # mu_0[0, 0] = vehicle_pose[0]
-    # mu_0[1, 0] = vehicle_pose[1]
-    # mu_0[2, 0] = np.deg2rad(car_state.heading)  # car_state.heading
-    # mu_0[3, 0] = target1_[0]
-    # mu_0[4, 0] = target1_[1]
-    # mu_0[5, 0] = target2_[0]
-    # mu_0[6, 0] = target2_[1]
-    # test
-    # mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(1.73/2))
-    # mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(1.73/2)
-    # mu_0[2, 0] = np.deg2rad(car_state.heading)
-    # mu_0[3, 0] = -1 * (mu_0[0, 0] - target_info.targetPosY1)
-    # mu_0[4, 0] = mu_0[1, 0] + target_info.targetPosX1
-    # mu_0[5, 0] = target_info.targetPosY2 + mu_0[0, 0]
-    # mu_0[6, 0] = target_info.targetPosX2 - mu_0[1, 0]
-    # mu_0[3, 0] = target_info.targetPosY1 - mu_0[0, 0]
-    # mu_0[4, 0] = target_info.targetPosX1 - mu_0[1, 0]
-    # mu_0[5, 0] = target_info.targetPosY2 - mu_0[0, 0]
-    # mu_0[6, 0] = target_info.targetPosX2 - mu_0[1, 0]
-
-    # 0508
-    # mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(mu_0[2, 0])
-    # mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(mu_0[2, 0])
-    # mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(mu_0[2, 0])
-    # mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(mu_0[2, 0])
-
-    # mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(1.73/2))
-    # mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(1.73/2)
-    # mu_0[2, 0] = np.deg2rad(car_state.heading)
-    # mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
-    # mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
-    # mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
-    # mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
-    # 0508/
-
     # 0509
-    mu_0[0, 0] = -1 * (car_state.PosX + np.cos(np.deg2rad(car_state.heading))*(2.7/2))
-    mu_0[1, 0] = car_state.PosY + np.sin(np.deg2rad(car_state.heading))*(2.7/2)
-    mu_0[2, 0] = np.deg2rad(car_state.heading)
-    mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.cos(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
-    mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY1, 2) + pow(mu_0[1, 0] - target_info.targetPosX1, 2)) * np.sin(np.arctan2(target_info.targetPosX1 - mu_0[1, 0], target_info.targetPosY1 - mu_0[0, 0]) - mu_0[2, 0])
-    mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.cos(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
-    mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target_info.targetPosY2, 2) + pow(mu_0[1, 0] - target_info.targetPosX2, 2)) * np.sin(np.arctan2(target_info.targetPosX2 - mu_0[1, 0], target_info.targetPosY2 - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[0, 0] = vehicle_pose[0]
+    mu_0[1, 0] = vehicle_pose[1]
+    mu_0[2, 0] = heading
+    mu_0[3, 0] = np.sqrt(pow(mu_0[0, 0] - target1[1], 2) + pow(mu_0[1, 0] - target1[0], 2)) * np.cos(np.arctan2(target1[0] - mu_0[1, 0], target1[1] - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[4, 0] = np.sqrt(pow(mu_0[0, 0] - target1[1], 2) + pow(mu_0[1, 0] - target1[0], 2)) * np.sin(np.arctan2(target1[0] - mu_0[1, 0], target1[1] - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[5, 0] = np.sqrt(pow(mu_0[0, 0] - target2[1], 2) + pow(mu_0[1, 0] - target2[0], 2)) * np.cos(np.arctan2(target2[0] - mu_0[1, 0], target2[1] - mu_0[0, 0]) - mu_0[2, 0])
+    mu_0[6, 0] = np.sqrt(pow(mu_0[0, 0] - target2[1], 2) + pow(mu_0[1, 0] - target2[0], 2)) * np.sin(np.arctan2(target2[0] - mu_0[1, 0], target2[1] - mu_0[0, 0]) - mu_0[2, 0])
     # 0509/
     # test/
 
